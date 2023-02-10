@@ -1,8 +1,9 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+import ecomSlice from './ecomSlice'
 
 export const store = configureStore({
   reducer: {
-    
+    ecom:ecomSlice
   },
 });
 
