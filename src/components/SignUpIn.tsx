@@ -1,21 +1,22 @@
-import React, {useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addUser, userSignIn } from "../redux/ecomSlice";
 import { RootState } from "../redux/store";
-import { refSignInpsType,userType } from "../types";
+import { refSignInpsType, userType } from "../types";
 
 function SignUpIn() {
   const [state, setState] = useState({
     btnValue: "signUp",
-    formErrors: { name: "", email: "", password: "" },
+    formErrors: { name: "", email: "", password: "", userType: "" },
   });
-  const [msg,setMsg]=useState({ type: "", value: "" })
+  const [msg, setMsg] = useState({ type: "", value: "" });
 
   const refSignInps = useRef<refSignInpsType>({
     name: null,
     email: null,
     password: null,
+    userType: { Customer: null, Admin: null, Manager: null },
   });
 
   const dispatch = useDispatch();
@@ -24,12 +25,12 @@ function SignUpIn() {
   const navigate = useNavigate();
 
   const signUp = (e: React.FormEvent<HTMLFormElement>) => {
-    let objErrors={name:'',email:'',password:''}
-    let email=refSignInps.current.email!.value
-    let userExists=ecomState.users.find((ele)=>ele.email===email)
-    if(userExists!==undefined){
-      setMsg({type:'danger',value:'User already exists! Sign In.'});
-      return
+    let objErrors = { name: "", email: "", password: "", userType: "" };
+    let email = refSignInps.current.email!.value;
+    let userExists = ecomState.users.find((ele) => ele.email === email);
+    if (userExists !== undefined) {
+      setMsg({ type: "danger", value: "User already exists! Sign In." });
+      return;
     }
     // ternary conditions are used for reseting error values in objErrors object for each input
     objErrors.name = refSignInps.current.name!.value.match(
@@ -47,48 +48,62 @@ function SignUpIn() {
     )
       ? ""
       : "Password must contain minimum 8 characters with minimum 1 lowercase,uppercase,number and a special character.";
+      let userTypeIndex=Object.values(refSignInps.current.userType).findIndex(
+        (ele) => ele!.checked
+      )
+      objErrors.userType =
+       userTypeIndex!== -1
+        ? ""
+        : "Select one of the given user types";
     // every method is used to check for any non-empty values in objError object
     let noErrorExists = Object.values(objErrors).every((ele) => ele === "");
+    let role=Object.keys(refSignInps.current.userType)[userTypeIndex]
     if (noErrorExists) {
       let user: userType = {
         name: refSignInps.current.name!.value,
         email: refSignInps.current.email!.value,
         password: refSignInps.current.password!.value,
-        role: "Customer",
+        role: role,
         cart: [],
       };
       dispatch(addUser(user));
       setMsg({ type: "success", value: "Sign Up successful!" });
       // localStorage.setItem("ecomstore-user", JSON.stringify(user));
-      localStorage.setItem('ecomstore-users',JSON.stringify([...ecomState.users,user]))
+      localStorage.setItem(
+        "ecomstore-users",
+        JSON.stringify([...ecomState.users, user])
+      );
       e.currentTarget.reset();
-      navigate('/')
+      navigate("/");
     }
-    setState({ ...state, formErrors:objErrors });
+    setState({ ...state, formErrors: objErrors });
   };
 
   const signIn = (e: React.FormEvent<HTMLFormElement>) => {
     let email = refSignInps.current.email!.value;
-    let password=refSignInps.current.password!.value;
+    let password = refSignInps.current.password!.value;
     let found = ecomState.users.find((ele) => ele.email === email);
     if (found !== undefined) {
-      if(found.password===password){
-        setMsg({value:'Sign In successful',type:'success'})
+      if (found.password === password) {
+        setMsg({ value: "Sign In successful", type: "success" });
         // localStorage.setItem("ecomstore-user", JSON.stringify(found));
-        dispatch(userSignIn(found))
-      navigate('/')
-      }
-      else{
-        setMsg({value:'Password did not match!',type:'danger'})
+        dispatch(userSignIn(found));
+        navigate("/");
+      } else {
+        setMsg({ value: "Password did not match!", type: "danger" });
       }
     } else {
-      setMsg({value:'User Not found!',type:'danger'})
+      setMsg({ value: "User Not found!", type: "danger" });
     }
   };
 
   return (
     <div className="signupin mx-auto card p-4 my-4 border-0">
-      {msg.value!==''&&<span className={`alert alert-${msg.type} shorttxt`} role="alert">{msg.value}</span>}
+      {msg.value !== "" && (
+        <span className={`alert alert-${msg.type} shorttxt`} role="alert">
+          {msg.value}
+        </span>
+      )}
       <h4 className="card-title">
         {state.btnValue === "signUp" ? "Sign Up" : "Sign In"}
       </h4>
@@ -133,6 +148,35 @@ function SignUpIn() {
           />
           <span className="text-danger shorttxt lh-sm d-block">
             {state.formErrors.password}
+          </span>
+        </div>
+        <div className="mb-3">
+          <div>
+            <label className="form-label d-block">User Type</label>
+            <input
+              className="form-check-input me-1"
+              ref={(ele) => (refSignInps.current.userType.Customer = ele)}
+              type="radio"
+              name="userType"
+            />
+            <label className="form-check-label">Customer</label>
+            <input
+              className="form-check-input ms-2 me-1"
+              ref={(ele) => (refSignInps.current.userType.Admin = ele)}
+              type="radio"
+              name="userType"
+            />
+            <label className="form-check-label">Admin</label>
+            <input
+              className="form-check-input ms-2 me-1"
+              ref={(ele) => (refSignInps.current.userType.Manager = ele)}
+              type="radio"
+              name="userType"
+            />
+            <label className="form-check-label">Manager</label>
+          </div>
+          <span className="text-danger shorttxt">
+            {state.formErrors.userType}
           </span>
         </div>
         <button className="btn btn-primary w-100" type="submit">
