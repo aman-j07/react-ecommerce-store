@@ -150,7 +150,7 @@ function SignUpIn() {
             {state.formErrors.password}
           </span>
         </div>
-        <div className="mb-3">
+        {state.btnValue === "signUp" && <div className="mb-3">
           <div>
             <label className="form-label d-block">User Type</label>
             <input
@@ -178,7 +178,7 @@ function SignUpIn() {
           <span className="text-danger shorttxt">
             {state.formErrors.userType}
           </span>
-        </div>
+        </div>}
         <button className="btn btn-primary w-100" type="submit">
           {state.btnValue === "signUp" ? "Sign Up" : "Sign In"}
         </button>

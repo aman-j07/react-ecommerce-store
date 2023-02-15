@@ -1,6 +1,8 @@
 /* Universal CSS */
 .App {
     background: #f6f9ff;
+    min-height: 100vh;
+    font-family: 'Assistant', sans-serif;
 }
 
 .shorttxt {
@@ -11,10 +13,22 @@
     font-size: 12px;
 }
 
+button:hover {
+    filter:brightness(1.1);
+    cursor: pointer;
+}
+
 .signupin {
     min-width: 310px;
     width: 30%;
     box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
+}
+
+.home__filters {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: scroll;
 }
 
 .home__filterlists {
@@ -36,6 +50,7 @@
     box-shadow: rgb(60 64 67 / 30%) 0px 1px 2px 0px, rgb(60 64 67 / 15%) 0px 2px 6px 2px;
     overflow: hidden;
     background-color: white;
+    position: relative;
 }
 
 .product__pic {
@@ -44,14 +59,31 @@
     margin: auto;
 }
 
+.product__rating {
+    position: absolute;
+    top: 150px;
+    right: 10px;
+}
+
+.product__btncta {
+    background-color: #2b85ff;
+    color: white;
+    font-weight: 600;
+}
+
 .cart {
-    max-width: 700px;
+    max-width: 800px;
     margin: auto;
+    min-height: 65vh;
 }
 
 .cart__products {
-    max-width: 350px;
-    margin: auto;
+    max-width: 450px;
+    width: 100%;
+}
+
+.cart__pricedetails {
+    min-width: 300px;
 }
 
 .cart__productpic {
@@ -59,8 +91,34 @@
     height: 175px;
 }
 
+.cart__productDetails__removebtn {
+    width: min-content;
+    padding: 0;
+}
+
 .cart__productdetails__quantitybox {
     width: 20px;
     padding: 0;
     border: 1px solid #00000054;
+}
+
+.cart__ctabtn {
+    background: linear-gradient(to right, #6a3093, #a044ff);
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 0.5rem;
+    border-radius: 1px;
+}
+
+.cart__emptypic {
+    max-height: 250px;
+}
+
+.dashboard {
+    min-height: 65vh;
+}
+
+.tab--products__prodpic {
+    max-height: 100px;
 }

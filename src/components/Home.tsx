@@ -23,18 +23,22 @@ function Home() {
   // filterArr=ecomState.filtersUsed;
 
   const addToCart = (id: number) => {
-    let found = false;
-    ecomState.user.cart.forEach((ele, i) => {
-      if (ele.id === id) {
-        found = true;
-        dispatch(increaseQuantityInCart(i));
-      }
-    });
-    if (!found) {
-      let productIndex = ecomState.products.findIndex((ele) => ele.id === id);
-      if (productIndex !== -1) {
-        let product = { ...ecomState.products[productIndex], quantity: 1 };
-        dispatch(addProductToCart(product));
+    if (ecomState.user.email === "") {
+      alert('Sign In to add products to cart')
+    } else {
+      let found = false;
+      ecomState.user.cart.forEach((ele, i) => {
+        if (ele.id === id) {
+          found = true;
+          dispatch(increaseQuantityInCart(i));
+        }
+      });
+      if (!found) {
+        let productIndex = ecomState.products.findIndex((ele) => ele.id === id);
+        if (productIndex !== -1) {
+          let product = { ...ecomState.products[productIndex], quantity: 1 };
+          dispatch(addProductToCart(product));
+        }
       }
     }
   };
@@ -127,12 +131,12 @@ function Home() {
     } else if (sortOrder === "descending") {
       results.sort((a, b) => b[property] - a[property]);
     }
-    dispatch(updateFilteredProducts(results))
+    dispatch(updateFilteredProducts(results));
   };
 
   return (
-    <main className="home d-flex">
-      <section className="home__filters bg-white p-4">
+    <main className="home d-flex align-items-start position-relative">
+      <aside className="home__filters bg-white p-4 shadow">
         <h4 className="fw-light">FILTERS</h4>
         {ecomState.filters.map((ele) => {
           return (
@@ -177,7 +181,7 @@ function Home() {
             </ul>
           );
         })}
-      </section>
+      </aside>
       <section className="productsarea flex-grow-1 px-3">
         <div className="productsarea__searchsort my-4 d-flex gap-2 align-items-center">
           <div className="input-group">
@@ -213,22 +217,27 @@ function Home() {
         <section className="products my-2">
           {ecomState.filteredProducts.map((ele) => {
             return (
-              <div key={ele.id} className="product border rounded-2 ">
+              <div
+                key={ele.id}
+                className="product d-flex flex-column align-items-center border rounded-2 "
+              >
                 <img
                   className="product__pic"
                   src={ele.thumbnail}
                   alt={ele.title}
                 />
-                <div className="product__details card-body">
-                  <h6 className="product__details__title">{ele.title}</h6>
-                  <p className="product__details__price shorttxt">
-                    ₹{ele.price} {ele.rating}
-                  </p>
+                <span className="product__rating shorttxt fw-bold bg-white px-1 rounded-1">{ele.rating}<i className="bi bi-star-fill ms-1"></i></span>
+                <div className="product__details card-body w-100 d-flex gap-2 flex-column justify-content-between">
+                  <h6 className="product__details__title my-1">{ele.title}</h6>
+                  <span className="shorttxt">by {ele.brand}</span>
+                  <div className="product__details__price d-flex gap-1 align-items-center">
+                    <span className="fw-bold">₹{ele.price}</span><span className="text-seconday text-decoration-line-through shorttxt">₹{(ele.price+((ele.discountPercentage*ele.price)/100)).toFixed()}</span><span className="shorttxt text-danger">({ele.discountPercentage.toFixed()}% OFF)</span>
+                  </div>
                   <button
                     onClick={() => addToCart(ele.id)}
-                    className="btn btn-primary"
+                    className="product__btncta border-0 py-2 shorttxt"
                   >
-                    Add to Cart
+                    ADD TO CART
                   </button>
                 </div>
               </div>

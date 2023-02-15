@@ -84,8 +84,20 @@ export const ecomSlice = createSlice({
     decreaseQuantityInCart: (state, action: PayloadAction<number>) => {
       state.user.cart[action.payload].quantity -= 1;
     },
+    updateQuantityInCart: (state, action: PayloadAction<{index:number,value:number}>) => {
+      state.user.cart[action.payload.index].quantity = action.payload.value;
+    },
+    removeProductFromCart:(state, action: PayloadAction<number>)=>{
+      state.user.cart.splice(action.payload,1);
+    },
     updateFilteredProducts:(state,action:PayloadAction<cartProductType[]>)=>{
       state.filteredProducts=action.payload
+    },
+    deleteUser:(state, action: PayloadAction<number>)=>{
+      state.users.splice(action.payload,1);
+    },
+    updateStockInProducts: (state, action: PayloadAction<{index:number,value:number}>) => {
+      state.products[action.payload.index].stock = action.payload.value;
     },
   },
   extraReducers(builder) {
@@ -113,6 +125,10 @@ export const {
   addProductToCart,
   increaseQuantityInCart,
   decreaseQuantityInCart,
-  updateFilteredProducts
+  updateQuantityInCart,
+  removeProductFromCart,
+  updateFilteredProducts,
+  deleteUser,
+  updateStockInProducts
 } = ecomSlice.actions;
 export default ecomSlice.reducer;

@@ -2,7 +2,7 @@ import React from "react";
 
 function Footer() {
   return (
-    <footer className="border-top py-4 text-center">
+    <footer className="border-top py-4 text-center bg-white">
       <div className="copyright">
         © <strong> AJ </strong> . All Rights Reserved
       </div>
