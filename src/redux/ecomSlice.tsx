@@ -14,7 +14,7 @@ const initialState: storeType = {
   loading: false,
   error: { found: false, msg: "" },
   filteredProducts: [],
-  filtersUsed:[],
+  filtersUsed: { brand: [], category: [], price: [], discountPercentage: [] },
   filters: [
     {type:'string',name:'brand',stringValue:[
       "Apple",
@@ -41,13 +41,19 @@ const initialState: storeType = {
 export const fetchProducts = createAsyncThunk(
   "ecomstore/fetchProducts",
   async () => {
+    let products=[]
     try {
       const res = await fetch("https://dummyjson.com/products");
       const data = await res.json();
-      return data.products;
+      products=data.products
     } catch (err) {
+      console.log(err)
       throw err;
     }
+    if(products===undefined){
+      throw new Error('Unknown error while fetching data');
+    }
+    return products;
   }
 );
 
@@ -55,7 +61,7 @@ export const ecomSlice = createSlice({
   name: "ecomstore",
   initialState,
   reducers: {
-    loadUsersFromLocal: (state, action) => {
+    loadUsersFromLocal: (state, action: PayloadAction<userType[]>) => {
       state.users = action.payload;
     },
     addUser: (state, action: PayloadAction<userType>) => {
@@ -98,7 +104,11 @@ export const ecomSlice = createSlice({
     },
     updateStockInProducts: (state, action: PayloadAction<{index:number,value:number}>) => {
       state.products[action.payload.index].stock = action.payload.value;
+      state.filteredProducts[action.payload.index].stock = action.payload.value;
     },
+    updateFiltersUsed:(state, action)=>{
+      state.filtersUsed=action.payload;
+    }
   },
   extraReducers(builder) {
     builder
@@ -129,6 +139,7 @@ export const {
   removeProductFromCart,
   updateFilteredProducts,
   deleteUser,
-  updateStockInProducts
+  updateStockInProducts,
+  updateFiltersUsed
 } = ecomSlice.actions;
 export default ecomSlice.reducer;

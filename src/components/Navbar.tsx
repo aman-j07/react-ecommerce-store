@@ -43,24 +43,25 @@ function Navbar() {
   console.log(useAppSelector((store) => store.ecom));
 
   return (
-    <header className="shadow">
-      <nav className="navbar navbar-light bg-white">
+    <header className="header border border-bottom position-sticky top-0">
+      <nav className="navbar navbar-light bg-white py-3">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/">
             <i className="bi bi-shop"></i>
             <span>OneStopShop</span>
           </Link>
-          <ul className="list-unstyled d-flex align-items-center gap-2">
+          <ul className="list-unstyled d-flex align-items-center gap-3 mb-0">
             {ecomState.user.email !== "" &&
               (ecomState.user.role === "Customer" ? (
                 <li>
-                  <Link className="text-decoration-none" to="cart">
-                    Cart
+                  <Link className="text-decoration-none text-dark position-relative" to="cart">
+                  <span>Cart</span><i className="bi bi-cart ms-1 fs-5"></i>
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger">{ecomState.user.cart.length>0 && ecomState.user.cart.length}</span>
                   </Link>
                 </li>
               ) : (
                 <li>
-                  <Link className="text-decoration-none" to="dashboard">
+                  <Link className="text-decoration-none text-dark" to="dashboard">
                     Dashboard
                   </Link>
                 </li>
@@ -68,15 +69,15 @@ function Navbar() {
 
             <li>
               {ecomState.user.email === "" ? (
-                <Link className="text-decoration-none" to="signupin">
+                <Link className="text-decoration-none text-dark" to="signupin">
                   Sign In/Up
                 </Link>
               ) : (
                 <button
                   onClick={signOut}
-                  className="btn btn-link text-decoration-none"
+                  className="btn p-0 text-decoration-none text-dark"
                 >
-                  SignOut
+                  SignOut<i className="bi bi-box-arrow-right ms-1 fs-5"></i>
                 </button>
               )}
             </li>

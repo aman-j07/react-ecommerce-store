@@ -38,6 +38,8 @@ export type cartProductType = {
 
 export type filterKeysType='brand' | 'category' | 'price' | 'discountPercentage';
 
+export type filtersUsedType={brand: string[];category: string[];price: { minimum: number; maximum: number }[];discountPercentage: { minimum: number; maximum: number }[]}
+
 export type storeType = {
   products: any[];
   user: userType;
@@ -45,8 +47,8 @@ export type storeType = {
   users: userType[];
   loading: boolean;
   error: { found: boolean; msg: string };
-  filtersUsed: {type:string,property:string,equalsTo:string,lessThan:number,greaterThan:number}[];
-  filteredProducts: productType[];
+  filtersUsed: {brand: string[];category: string[];price: { minimum: number; maximum: number }[];discountPercentage: { minimum: number; maximum: number }[]}
+  filteredProducts: any[];
   filters: {type:string,name:filterKeysType,stringValue?:string[],numericValue?:{value:string,lessThan:number,greaterThan:number}[]}[];
 };
 

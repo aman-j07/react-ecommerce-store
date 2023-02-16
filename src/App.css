@@ -13,9 +13,17 @@
     font-size: 12px;
 }
 
+.loader {
+    max-height: 40px;
+}
+
 button:hover {
     filter:brightness(1.1);
     cursor: pointer;
+}
+
+.header {
+    z-index: 1;
 }
 
 .signupin {
@@ -26,8 +34,8 @@ button:hover {
 
 .home__filters {
     position: sticky;
-    top: 0;
-    max-height: 100vh;
+    top: 70px;
+    max-height: 90vh;
     overflow-y: scroll;
 }
 
@@ -55,7 +63,8 @@ button:hover {
 
 .product__pic {
     height: 180px;
-    max-width: 100%;
+    max-width: 100px;
+    max-width: 100%; 
     margin: auto;
 }
 
@@ -121,4 +130,10 @@ button:hover {
 
 .tab--products__prodpic {
     max-height: 100px;
+}
+
+.printbill {
+    z-index: -1;
+    position: absolute;
+    top: 0;
 }

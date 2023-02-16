@@ -4,33 +4,36 @@ import {
   addProductToCart,
   increaseQuantityInCart,
   updateFilteredProducts,
+  updateFiltersUsed,
 } from "../redux/ecomSlice";
 import { AppDispatch, RootState } from "../redux/store";
-import { filterKeysType } from "../types";
+import { filterKeysType, filtersUsedType } from "../types";
+import noResultsFound from "../assets/no-results-found.jpg";
+import loader from "../assets/loading.gif";
 
-let filterObj: {
-  brand: string[];
-  category: string[];
-  price: { minimum: number; maximum: number }[];
-  discountPercentage: { minimum: number; maximum: number }[];
-} = { brand: [], category: [], price: [], discountPercentage: [] };
-let filteredProducts: any[] = [];
 function Home() {
   const dispatch: AppDispatch = useDispatch();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const ecomState = useAppSelector((store) => store.ecom);
-  console.log(ecomState);
-  // filterArr=ecomState.filtersUsed;
 
   const addToCart = (id: number) => {
     if (ecomState.user.email === "") {
-      alert('Sign In to add products to cart')
+      alert("Sign In to add products to cart");
     } else {
       let found = false;
       ecomState.user.cart.forEach((ele, i) => {
         if (ele.id === id) {
           found = true;
-          dispatch(increaseQuantityInCart(i));
+          if(ele.quantity<ele.stock){
+            if (ele.quantity < 10) {
+              dispatch(increaseQuantityInCart(i));
+            } else {
+              alert("Maximum quantity per order for a product is 10");
+            }
+          }
+          else{
+            alert(`Current stock of this product is ${ele.stock}`);
+          }
         }
       });
       if (!found) {
@@ -45,12 +48,14 @@ function Home() {
 
   const filterProducts = (
     e: ChangeEvent<HTMLInputElement>,
-    filterType: string,
     filterName: filterKeysType,
     filterValue: string,
     lessThan: number = 0,
     greaterThan: number = 0
   ) => {
+    let filterObj: filtersUsedType = JSON.parse(
+      JSON.stringify(ecomState.filtersUsed)
+    );
     let isChecked = e.currentTarget.checked;
     if (isChecked) {
       if (filterName === "brand" || filterName === "category") {
@@ -75,38 +80,27 @@ function Home() {
       }
       deleteIndex >= 0 && filterObj[filterName].splice(deleteIndex, 1);
     }
-    console.log(filterObj);
 
-    filteredProducts = [];
+    dispatch(updateFiltersUsed(filterObj));
 
-    // ecomState.products.forEach(ele=>{
-    //   let matched=false;
-    //   let counter=0;
-    //   Object.keys(filterObj).forEach((key)=>{
-    //     let filterArr=filterObj[key];
-    //     filterArr.forEach((filter:any)=>{
-    //       if(filter.type==='string'){
-    //         if(ele[filter.property]===filter.equalsTo){
-    //           matched=true;
-    //         }
-    //       }
-    //       else if(filter.type==='numeric'){
-    //         if(ele[filter.property]<filter.lessThan && ele[filter.property]>=filter.greaterThan){
-    //           matched=true;
-    //         }
-    //       }
-    //     })
-    //     if(matched){
-    //       counter++;
-    //     }
-    //   })
-    //   console.log(counter)
-    //   if(counter===4){
-    //     filteredProducts.push(ele)
-    //   }
-    // })
-    console.log(filterObj);
-    console.log(filteredProducts);
+    let filteredProducts = ecomState.products.filter((ele) => {
+      return (
+        (filterObj.brand.length === 0 || filterObj.brand.includes(ele.brand)) &&
+        (filterObj.category.length === 0 ||
+          filterObj.category.includes(ele.category)) &&
+        (filterObj.price.find(
+          (item) => item.minimum < ele.price && item.maximum > ele.price
+        ) ||
+          filterObj.price.length === 0) &&
+        (filterObj.discountPercentage.find(
+          (item) =>
+            item.minimum < ele.discountPercentage &&
+            item.maximum > ele.discountPercentage
+        ) ||
+          filterObj.discountPercentage.length === 0)
+      );
+    });
+    dispatch(updateFilteredProducts(filteredProducts));
   };
 
   const search = (e: ChangeEvent<HTMLInputElement>) => {
@@ -136,7 +130,7 @@ function Home() {
 
   return (
     <main className="home d-flex align-items-start position-relative">
-      <aside className="home__filters bg-white p-4 shadow">
+      <aside className="home__filters bg-white p-4">
         <h4 className="fw-light">FILTERS</h4>
         {ecomState.filters.map((ele) => {
           return (
@@ -149,7 +143,7 @@ function Home() {
                         <input
                           className="mx-2"
                           onChange={(e) => {
-                            filterProducts(e, ele.type, ele.name, listItem);
+                            filterProducts(e, ele.name, listItem);
                           }}
                           type="checkbox"
                         />
@@ -165,7 +159,6 @@ function Home() {
                           onChange={(e) => {
                             filterProducts(
                               e,
-                              ele.type,
                               ele.name,
                               "",
                               listItem.lessThan,
@@ -184,19 +177,19 @@ function Home() {
       </aside>
       <section className="productsarea flex-grow-1 px-3">
         <div className="productsarea__searchsort my-4 d-flex gap-2 align-items-center">
-          <div className="input-group">
-            <span className="input-group-text bg-white border-end-0">
+          <div className="input-group shadow-sm">
+            <span className="input-group-text bg-white border-end-0 rounded-0">
               <i className="bi bi-search"></i>
             </span>
             <input
               type="text"
-              className="form-control border-start-0 p-2"
+              className="form-control border-start-0 p-2 rounded-0"
               placeholder="Search for products, brands and more."
               onChange={(e) => search(e)}
             />
           </div>
           <select
-            className="form-select rounded-0"
+            className="form-select rounded-0 py-2 shadow-sm"
             onChange={(e) => {
               sort(e);
             }}
@@ -214,36 +207,63 @@ function Home() {
             </option>
           </select>
         </div>
-        <section className="products my-2">
-          {ecomState.filteredProducts.map((ele) => {
-            return (
-              <div
-                key={ele.id}
-                className="product d-flex flex-column align-items-center border rounded-2 "
-              >
-                <img
-                  className="product__pic"
-                  src={ele.thumbnail}
-                  alt={ele.title}
-                />
-                <span className="product__rating shorttxt fw-bold bg-white px-1 rounded-1">{ele.rating}<i className="bi bi-star-fill ms-1"></i></span>
-                <div className="product__details card-body w-100 d-flex gap-2 flex-column justify-content-between">
-                  <h6 className="product__details__title my-1">{ele.title}</h6>
-                  <span className="shorttxt">by {ele.brand}</span>
-                  <div className="product__details__price d-flex gap-1 align-items-center">
-                    <span className="fw-bold">₹{ele.price}</span><span className="text-seconday text-decoration-line-through shorttxt">₹{(ele.price+((ele.discountPercentage*ele.price)/100)).toFixed()}</span><span className="shorttxt text-danger">({ele.discountPercentage.toFixed()}% OFF)</span>
+        {ecomState.loading ? (
+          <span className="fs-4 d-flex justify-content-center gap-1">
+            <span>Loading</span>
+            <img className="loader" src={loader} alt="loading gif" />
+          </span>
+        ) : ecomState.filteredProducts.length > 0 ? (
+          <section className="products my-2">
+            {ecomState.filteredProducts.map((ele) => {
+              return (
+                <div
+                  key={ele.id}
+                  className="product d-flex flex-column align-items-center border rounded-2 "
+                >
+                  <img
+                    className="product__pic"
+                    src={ele.thumbnail}
+                    alt={ele.title}
+                  />
+                  <span className="product__rating shorttxt fw-bold bg-white px-1 rounded-1">
+                    {ele.rating}
+                    <i className="bi bi-star-fill ms-1"></i>
+                  </span>
+                  <div className="product__details card-body w-100 d-flex gap-2 flex-column justify-content-between">
+                    <h6 className="product__details__title my-1">
+                      {ele.title}
+                    </h6>
+                    <span className="shorttxt">by {ele.brand}</span>
+                    <div className="product__details__price d-flex gap-1 align-items-center">
+                      <span className="fw-bold">₹{ele.price}</span>
+                      <span className="text-seconday text-decoration-line-through shorttxt">
+                        ₹
+                        {(
+                          (ele.price * 100) /
+                          (100 - ele.discountPercentage)
+                        ).toFixed()}
+                      </span>
+                      <span className="shorttxt text-danger">
+                        ({ele.discountPercentage.toFixed()}% OFF)
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => addToCart(ele.id)}
+                      className="product__btncta border-0 py-2 shorttxt"
+                    >
+                      ADD TO CART
+                    </button>
                   </div>
-                  <button
-                    onClick={() => addToCart(ele.id)}
-                    className="product__btncta border-0 py-2 shorttxt"
-                  >
-                    ADD TO CART
-                  </button>
                 </div>
-              </div>
-            );
-          })}
-        </section>
+              );
+            })}
+          </section>
+        ) : (
+          <div className="bg-white text-center vh-100">
+            <img className="my-4" src={noResultsFound} alt="no results pic" />
+            <h4>Sorry! No results found :(</h4>
+          </div>
+        )}
       </section>
     </main>
   );

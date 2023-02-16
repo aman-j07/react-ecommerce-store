@@ -13,7 +13,6 @@ function Dashboard() {
     index: number
   ) => {
     let value = e.currentTarget.value;
-    console.log(value);
     if (value === "") {
       dispatch(updateStockInProducts({ index: index, value: 0 }));
     } else if (isNaN(parseInt(value))) {
@@ -24,8 +23,8 @@ function Dashboard() {
   };
 
   return (
-    <div className="dashboard m-4 bg-white p-4">
-      {ecomState.user.role === "Manager" ? (
+    <div className="dashboard m-4 bg-white p-4 shadow">
+      {ecomState.user.role === "Admin" ? (
         <>
           <h4>Users Table</h4>
           <table className="table tab--users">
@@ -41,22 +40,24 @@ function Dashboard() {
             <tbody>
               {ecomState.users.map((ele, index) => {
                 return (
-                  <tr key={ele.email}>
-                    <td>{ele.name}</td>
-                    <td>{ele.email}</td>
-                    <td>{ele.password}</td>
-                    <td>{ele.role}</td>
-                    <td>
-                      <button
-                        className="btn text-danger p-0 "
-                        onClick={() => {
-                          dispatch(deleteUser(index));
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
+                  ele.role !== "Admin" && (
+                    <tr key={ele.email}>
+                      <td>{ele.name}</td>
+                      <td>{ele.email}</td>
+                      <td>{ele.password}</td>
+                      <td>{ele.role}</td>
+                      <td>
+                        <button
+                          className="btn text-danger p-0 "
+                          onClick={() => {
+                            dispatch(deleteUser(index));
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  )
                 );
               })}
             </tbody>

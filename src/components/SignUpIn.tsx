@@ -34,12 +34,12 @@ function SignUpIn() {
     }
     // ternary conditions are used for reseting error values in objErrors object for each input
     objErrors.name = refSignInps.current.name!.value.match(
-      /^[A-Za-z]+([\ A-Za-z]+)*/
+      /^[A-Za-z]+([A-Za-z]+)*/
     )
       ? ""
       : "Enter a valid name.";
     state.formErrors.email = refSignInps.current.email!.value.match(
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
     )
       ? ""
       : "Enter a valid email id";
