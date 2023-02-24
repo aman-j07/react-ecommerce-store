@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useRef } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import {
   addProductToCart,
@@ -15,27 +15,34 @@ function Home() {
   const dispatch: AppDispatch = useDispatch();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const ecomState = useAppSelector((store) => store.ecom);
+  const refObj = useRef<{ filters: null | HTMLElement }>({ filters: null });
 
+  // fn for adding a product to cart
   const addToCart = (id: number) => {
+    // condition to check whether the user is signed in or not
     if (ecomState.user.email === "") {
       alert("Sign In to add products to cart");
     } else {
       let found = false;
+      // looping through the cart products of user to check whether the product he wants to add is already in his cart
       ecomState.user.cart.forEach((ele, i) => {
+        // condition for product added is already prsesnt nin his cart
         if (ele.id === id) {
           found = true;
-          if(ele.quantity<ele.stock){
+          // condition to check whether the product is available in stock
+          if (ele.quantity < ele.stock) {
+            // allowing maximum 10 quantity of any product to be added to cart
             if (ele.quantity < 10) {
               dispatch(increaseQuantityInCart(i));
             } else {
               alert("Maximum quantity per order for a product is 10");
             }
-          }
-          else{
+          } else {
             alert(`Current stock of this product is ${ele.stock}`);
           }
         }
       });
+      // condition to add a product to cart when it is not found in cart
       if (!found) {
         let productIndex = ecomState.products.findIndex((ele) => ele.id === id);
         if (productIndex !== -1) {
@@ -46,6 +53,7 @@ function Home() {
     }
   };
 
+  // fn to filter products according to different aspects
   const filterProducts = (
     e: ChangeEvent<HTMLInputElement>,
     filterName: filterKeysType,
@@ -53,21 +61,28 @@ function Home() {
     lessThan: number = 0,
     greaterThan: number = 0
   ) => {
+    // making a deep copy of filterobject from redux store
     let filterObj: filtersUsedType = JSON.parse(
       JSON.stringify(ecomState.filtersUsed)
     );
+
+    // checking whether the input checkbox is cheked or not 
     let isChecked = e.currentTarget.checked;
     if (isChecked) {
+      // if filter value is of string type then it is pushed in respective key of filters object in redux store 
       if (filterName === "brand" || filterName === "category") {
         filterObj[filterName].push(filterValue);
       } else if (
+        // if filter value is of integer type then an object containing minimum and maximum value is pushed in respective key of filters object in redux store
         filterName === "price" ||
         filterName === "discountPercentage"
       ) {
         filterObj[filterName].push({ minimum: greaterThan, maximum: lessThan });
       }
     } else {
+      // this scope handles unchecking of a filter
       let deleteIndex = -1;
+      // finding index of purticular filter within the filter object
       if (filterName === "brand" || filterName === "category") {
         deleteIndex = filterObj[filterName].indexOf(filterValue);
       } else if (
@@ -83,6 +98,7 @@ function Home() {
 
     dispatch(updateFiltersUsed(filterObj));
 
+    // using filter method to get the required products according to the filters selected
     let filteredProducts = ecomState.products.filter((ele) => {
       return (
         (filterObj.brand.length === 0 || filterObj.brand.includes(ele.brand)) &&
@@ -103,8 +119,10 @@ function Home() {
     dispatch(updateFilteredProducts(filteredProducts));
   };
 
+  // fn to handle searching of products
   const search = (e: ChangeEvent<HTMLInputElement>) => {
     let searched = e.currentTarget.value;
+    // using filter method to match brand,category or title with searched value
     let results = ecomState.products.filter((ele) => {
       return (
         ele.brand.toLowerCase().search(searched.toLowerCase()) !== -1 ||
@@ -116,6 +134,7 @@ function Home() {
   };
 
   const sort = (e: ChangeEvent<HTMLSelectElement>) => {
+    // using value of selected option to identify the order-(ascending or descending) and the aspect-(price,discount or rating)
     let value = e.currentTarget.value;
     let property = value.slice(0, value.indexOf("-"));
     let sortOrder = value.slice(value.indexOf("-") + 1);
@@ -130,7 +149,10 @@ function Home() {
 
   return (
     <main className="home d-flex align-items-start position-relative">
-      <aside className="home__filters bg-white p-4">
+      <aside
+        ref={(ele) => (refObj.current!.filters = ele)}
+        className="home__filters bg-white p-4 "
+      >
         <h4 className="fw-light">FILTERS</h4>
         {ecomState.filters.map((ele) => {
           return (
@@ -176,7 +198,7 @@ function Home() {
         })}
       </aside>
       <section className="productsarea flex-grow-1 px-3">
-        <div className="productsarea__searchsort my-4 d-flex gap-2 align-items-center">
+        <div className="productsarea__features my-1 my-sm-4 d-flex flex-sm-row flex-column gap-2">
           <div className="input-group shadow-sm">
             <span className="input-group-text bg-white border-end-0 rounded-0">
               <i className="bi bi-search"></i>
@@ -188,24 +210,36 @@ function Home() {
               onChange={(e) => search(e)}
             />
           </div>
-          <select
-            className="form-select rounded-0 py-2 shadow-sm"
-            onChange={(e) => {
-              sort(e);
-            }}
-          >
-            <option hidden>Sort By</option>
-            <option value="price-descending">Price:High to Low</option>
-            <option value="price-ascending">Price:Low to High</option>
-            <option value="rating-descending">Rating:High to Low</option>
-            <option value="rating-ascending">Rating:Low to High</option>
-            <option value="discountPercentage-descending">
-              Discount:High to Low
-            </option>
-            <option value="discountPercentage-ascending">
-              Discount:Low to High
-            </option>
-          </select>
+          <div className="d-flex gap-2 flex-grow-1">
+            <select
+              className="form-select rounded-0 py-2 shadow-sm"
+              onChange={(e) => {
+                sort(e);
+              }}
+            >
+              <option hidden>Sort By</option>
+              <option value="price-descending">Price:High to Low</option>
+              <option value="price-ascending">Price:Low to High</option>
+              <option value="rating-descending">Rating:High to Low</option>
+              <option value="rating-ascending">Rating:Low to High</option>
+              <option value="discountPercentage-descending">
+                Discount:High to Low
+              </option>
+              <option value="discountPercentage-ascending">
+                Discount:Low to High
+              </option>
+            </select>
+            <button
+              className="bg-white d-sm-none border shadow-sm rounded-0 d-flex gap-2 align-items-center px-2"
+              onClick={() => {
+                refObj.current.filters!.classList.toggle(
+                  "home__filters--hidden"
+                );
+              }}
+            >
+              Filters <i className="bi bi-funnel-fill"></i>
+            </button>
+          </div>
         </div>
         {ecomState.loading ? (
           <span className="fs-4 d-flex justify-content-center gap-1">
@@ -247,12 +281,18 @@ function Home() {
                         ({ele.discountPercentage.toFixed()}% OFF)
                       </span>
                     </div>
-                    <button
-                      onClick={() => addToCart(ele.id)}
-                      className="product__btncta border-0 py-2 shorttxt"
-                    >
-                      ADD TO CART
-                    </button>
+                    {ele.stock > 0 ? (
+                      <button
+                        onClick={() => addToCart(ele.id)}
+                        className="product__btncta border-0 py-2 shorttxt"
+                      >
+                        ADD TO CART
+                      </button>
+                    ) : (
+                      <button className="btn-warning text-white fw-bold border-0 py-2 shorttxt">
+                        OUT OF STOCK
+                      </button>
+                    )}
                   </div>
                 </div>
               );

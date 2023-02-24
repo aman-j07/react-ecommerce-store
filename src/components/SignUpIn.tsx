@@ -55,7 +55,7 @@ function SignUpIn() {
        userTypeIndex!== -1
         ? ""
         : "Select one of the given user types";
-    // every method is used to check for any non-empty values in objError object
+    // Array every method is used to check for any non-empty values in objError object
     let noErrorExists = Object.values(objErrors).every((ele) => ele === "");
     let role=Object.keys(refSignInps.current.userType)[userTypeIndex]
     if (noErrorExists) {
@@ -68,7 +68,6 @@ function SignUpIn() {
       };
       dispatch(addUser(user));
       setMsg({ type: "success", value: "Sign Up successful!" });
-      // localStorage.setItem("ecomstore-user", JSON.stringify(user));
       localStorage.setItem(
         "ecomstore-users",
         JSON.stringify([...ecomState.users, user])
@@ -79,14 +78,13 @@ function SignUpIn() {
     setState({ ...state, formErrors: objErrors });
   };
 
-  const signIn = (e: React.FormEvent<HTMLFormElement>) => {
+  const signIn = () => {
     let email = refSignInps.current.email!.value;
     let password = refSignInps.current.password!.value;
     let found = ecomState.users.find((ele) => ele.email === email);
     if (found !== undefined) {
       if (found.password === password) {
         setMsg({ value: "Sign In successful", type: "success" });
-        // localStorage.setItem("ecomstore-user", JSON.stringify(found));
         dispatch(userSignIn(found));
         navigate("/");
       } else {
@@ -111,7 +109,7 @@ function SignUpIn() {
         className="mt-2"
         onSubmit={(e) => {
           e.preventDefault();
-          state.btnValue === "signUp" ? signUp(e) : signIn(e);
+          state.btnValue === "signUp" ? signUp(e) : signIn();
         }}
       >
         {state.btnValue === "signUp" && (

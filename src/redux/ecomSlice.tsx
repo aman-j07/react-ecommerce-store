@@ -64,6 +64,10 @@ export const ecomSlice = createSlice({
     loadUsersFromLocal: (state, action: PayloadAction<userType[]>) => {
       state.users = action.payload;
     },
+    loadProductsFromLocal: (state, action: PayloadAction<any[]>) => {
+      state.products = action.payload;
+      state.filteredProducts=action.payload
+    },
     addUser: (state, action: PayloadAction<userType>) => {
       state.users.push(action.payload);
       state.user = action.payload;
@@ -108,6 +112,11 @@ export const ecomSlice = createSlice({
     },
     updateFiltersUsed:(state, action)=>{
       state.filtersUsed=action.payload;
+    },
+    orderPlaced:(state,action:PayloadAction<any[]>)=>{
+      state.products=action.payload;
+      state.filteredProducts=action.payload;
+      state.user.cart=[];
     }
   },
   extraReducers(builder) {
@@ -129,6 +138,7 @@ export const ecomSlice = createSlice({
 
 export const {
   loadUsersFromLocal,
+  loadProductsFromLocal,
   addUser,
   userSignIn,
   userSignOut,
@@ -140,6 +150,7 @@ export const {
   updateFilteredProducts,
   deleteUser,
   updateStockInProducts,
-  updateFiltersUsed
+  updateFiltersUsed,
+  orderPlaced
 } = ecomSlice.actions;
 export default ecomSlice.reducer;

@@ -8,11 +8,13 @@ function Dashboard() {
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const ecomState = useAppSelector((store) => store.ecom);
 
+  // fn to handle any change in quantity of products
   const changeQuantityHandler = (
     e: ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
     let value = e.currentTarget.value;
+    // condition to ensure if the value is a number then only rquired action is dispatched to update the state
     if (value === "") {
       dispatch(updateStockInProducts({ index: index, value: 0 }));
     } else if (isNaN(parseInt(value))) {

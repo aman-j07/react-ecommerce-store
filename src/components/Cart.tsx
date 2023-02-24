@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useMemo, useRef } from "react";
+import { ChangeEvent, useMemo, useRef } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
 import {
@@ -6,6 +6,7 @@ import {
   decreaseQuantityInCart,
   removeProductFromCart,
   updateQuantityInCart,
+  orderPlaced,
 } from "../redux/ecomSlice";
 import emptyCart from "../assets/emptycart.png";
 import ReactToPrint from "react-to-print";
@@ -16,6 +17,7 @@ function Cart() {
   const ecomState = useAppSelector((store) => store.ecom);
   const refPrintArea = useRef<HTMLDivElement>(null);
 
+  // useMemo hook used to calculate sum of all the products in cart
   const subtotal = useMemo(
     () =>
       ecomState.user.cart.reduce(
@@ -25,6 +27,7 @@ function Cart() {
     [ecomState.user.cart]
   );
 
+  // fn to change any product's quantity in cart
   const updateQuantity = (change: string, index: number) => {
     if (change === "increase") {
       if (
@@ -48,6 +51,7 @@ function Cart() {
     }
   };
 
+  // fn to handle any change in quantity of cart products
   const changeQuantityHandler = (
     e: ChangeEvent<HTMLInputElement>,
     index: number
@@ -64,9 +68,19 @@ function Cart() {
     }
   };
 
+  // fn to update quantities in stock after order is placed
+  const afterOrderPlaced=()=>{
+    let products:any[]=JSON.parse(JSON.stringify(ecomState.products));
+    ecomState.user.cart.forEach(cartItem=>{
+      let index=products.findIndex(prodItem=>cartItem.id===prodItem.id)
+      products[index].stock-=cartItem.quantity;
+    })
+    dispatch(orderPlaced(products));
+  }
+
   return (
     <>
-      <section className="cart d-flex justify-content-center bg-white my-2 shadow-sm">
+      <section className="cart d-flex flex-wrap justify-content-center bg-white my-2 shadow-sm pb-2">
         {ecomState.user.cart.length > 0 ? (
           <>
             <div className="cart__products border-end p-2">
@@ -159,6 +173,7 @@ function Cart() {
                   <button className="cart__ctabtn">PLACE ORDER</button>
                 )}
                 content={() => refPrintArea.current}
+                onAfterPrint={afterOrderPlaced}
               />
             </div>
           </>

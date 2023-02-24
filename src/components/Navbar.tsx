@@ -3,6 +3,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import {
   fetchProducts,
+  loadProductsFromLocal,
   loadUsersFromLocal,
   userSignIn,
   userSignOut,
@@ -13,25 +14,32 @@ function Navbar() {
   const dispatch: AppDispatch = useDispatch();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const ecomState = useAppSelector((store) => store.ecom);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    // accessing and updating redux store with any user or users data saved already in local storage
     let user = localStorage.getItem("ecomstore-user");
     let users = localStorage.getItem("ecomstore-users");
     user !== null && dispatch(userSignIn(JSON.parse(user)));
     users !== null && dispatch(loadUsersFromLocal(JSON.parse(users)));
+    
+    // checking if the products are already stored in local storage to prevent unnecessary loading of products from API 
+    let products = localStorage.getItem("ecomstore-products");
+    products === null || JSON.parse(products).length===0 ? dispatch(fetchProducts()) : dispatch(loadProductsFromLocal(JSON.parse(products))) ;
   }, []);
 
+  // fn for signing out
   const signOut = () => {
+    // user index in users array is found to get the products of his/her cart and updating our store values (in case the user signs in again he will be getting the cart loaded with products)
     let userIndex = ecomState.users.findIndex(
       (ele) => ele.email === ecomState.user.email
-    );
+    ); 
     dispatch(userSignOut(userIndex));
-    navigate('/')
+    navigate("/");
     localStorage.removeItem("ecomstore-user");
   };
 
+  // all the useEffects below serve the purpose of maintaining the same values for redux state and local storage
   useEffect(() => {
     localStorage.setItem("ecomstore-user", JSON.stringify(ecomState.user));
   }, [ecomState.user]);
@@ -40,7 +48,9 @@ function Navbar() {
     localStorage.setItem("ecomstore-users", JSON.stringify(ecomState.users));
   }, [ecomState.users]);
 
-  console.log(useAppSelector((store) => store.ecom));
+  useEffect(() => {
+    localStorage.setItem("ecomstore-products", JSON.stringify(ecomState.products));
+  }, [ecomState.products]);
 
   return (
     <header className="header border border-bottom position-sticky top-0">
@@ -54,14 +64,24 @@ function Navbar() {
             {ecomState.user.email !== "" &&
               (ecomState.user.role === "Customer" ? (
                 <li>
-                  <Link className="text-decoration-none text-dark position-relative" to="cart">
-                  <span>Cart</span><i className="bi bi-cart ms-1 fs-5"></i>
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger">{ecomState.user.cart.length>0 && ecomState.user.cart.length}</span>
+                  <Link
+                    className="text-decoration-none text-dark position-relative"
+                    to="cart"
+                  >
+                    <span>Cart</span>
+                    <i className="bi bi-cart ms-1 fs-5"></i>
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger">
+                      {ecomState.user.cart.length > 0 &&
+                        ecomState.user.cart.length}
+                    </span>
                   </Link>
                 </li>
               ) : (
                 <li>
-                  <Link className="text-decoration-none text-dark" to="dashboard">
+                  <Link
+                    className="text-decoration-none text-dark"
+                    to="dashboard"
+                  >
                     Dashboard
                   </Link>
                 </li>
