@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useRef, useState,useEffect } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import {
   addProductToCart,
@@ -15,13 +15,16 @@ function Home() {
   const dispatch: AppDispatch = useDispatch();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const ecomState = useAppSelector((store) => store.ecom);
+  // ref for toggling filters aside element for smaller screen width
   const refObj = useRef<{ filters: null | HTMLElement }>({ filters: null });
+  // separate state for showing alert messages
+  const [msg, setMsg] = useState({ type: "", value: "" });
 
   // fn for adding a product to cart
   const addToCart = (id: number) => {
     // condition to check whether the user is signed in or not
     if (ecomState.user.email === "") {
-      alert("Sign In to add products to cart");
+      setMsg({type:'info',value:'Sign In to add products to cart'})
     } else {
       let found = false;
       // looping through the cart products of user to check whether the product he wants to add is already in his cart
@@ -34,11 +37,14 @@ function Home() {
             // allowing maximum 10 quantity of any product to be added to cart
             if (ele.quantity < 10) {
               dispatch(increaseQuantityInCart(i));
+              setMsg({type:'success',value:'Product quantity updated in cart!'})
             } else {
-              alert("Maximum quantity per order for a product is 10");
+              // alert("Maximum quantity per order for a product is 10");
+              setMsg({type:'warning',value:'Maximum 10 pieces of product can be added in cart at a time'})
             }
           } else {
-            alert(`Current stock of this product is ${ele.stock}`);
+            // alert(`Current stock of this product is ${ele.stock}`);
+            setMsg({type:'warning',value:'No more stock available for this product'})
           }
         }
       });
@@ -48,10 +54,19 @@ function Home() {
         if (productIndex !== -1) {
           let product = { ...ecomState.products[productIndex], quantity: 1 };
           dispatch(addProductToCart(product));
+          setMsg({type:'success',value:'Product added successfully!'})
         }
       }
     }
   };
+
+  // removing alert after a second when any message is showed
+  useEffect(() => {
+    if(msg.value!==''){
+      setTimeout(()=>{setMsg({type:'',value:''})},2000)
+    }
+  }, [msg.value])
+  
 
   // fn to filter products according to different aspects
   const filterProducts = (
@@ -66,10 +81,10 @@ function Home() {
       JSON.stringify(ecomState.filtersUsed)
     );
 
-    // checking whether the input checkbox is cheked or not 
+    // checking whether the input checkbox is cheked or not
     let isChecked = e.currentTarget.checked;
     if (isChecked) {
-      // if filter value is of string type then it is pushed in respective key of filters object in redux store 
+      // if filter value is of string type then it is pushed in respective key of filters object in redux store
       if (filterName === "brand" || filterName === "category") {
         filterObj[filterName].push(filterValue);
       } else if (
@@ -149,6 +164,11 @@ function Home() {
 
   return (
     <main className="home d-flex align-items-start position-relative">
+      {msg.value !== "" && (
+        <span className={`home__message alert alert-${msg.type} shorttxt`} role="alert">
+          {msg.value}
+        </span>
+      )}
       <aside
         ref={(ele) => (refObj.current!.filters = ele)}
         className="home__filters bg-white p-4 "

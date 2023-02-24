@@ -36,11 +36,11 @@ function Cart() {
         if (ecomState.user.cart[index].quantity < 10) {
           dispatch(increaseQuantityInCart(index));
         } else {
-          alert("Maximum quantity per order for a product is 10");
+          alert("Maximum 10 pieces of product can be added in cart at a time");
         }
       }
       else{
-        alert(`Current stock of this product is ${ecomState.user.cart[index].stock}`);
+        alert(`No more stock available for this product`);
       }
     } else if (change === "decrease") {
       if (ecomState.user.cart[index].quantity > 1) {

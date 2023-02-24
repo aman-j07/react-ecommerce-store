@@ -32,6 +32,14 @@ button:hover {
     box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
 }
 
+.home__message {
+    position: fixed;
+    top: 80px;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .home__filters {
     position: sticky;
     top: 75px;
